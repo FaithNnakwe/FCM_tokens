@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'firebase_options.dart';
+import 'ArticleScreen.dart';
 
 Future<void> _messageHandler(RemoteMessage message) async {
   print('Background message: ${message.notification?.body}');
@@ -32,7 +33,6 @@ class NotificationHomePage extends StatefulWidget {
   final String title;
   const NotificationHomePage({Key? key, required this.title}) : super(key: key);
 
-
   @override
   State<NotificationHomePage> createState() => _NotificationHomePageState();
 }
@@ -52,7 +52,6 @@ class _NotificationHomePageState extends State<NotificationHomePage> {
 
     messaging.requestPermission();
 
-
     // Get and print token
     messaging.getToken().then((value) {
       print("FCM Token: $value");
@@ -61,21 +60,38 @@ class _NotificationHomePageState extends State<NotificationHomePage> {
       });
     });
 
+    // Handle notification tap when app is opened from background
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      if (message.data['screen'] == 'articles') {
+        Navigator.push(context, MaterialPageRoute(builder: (_) => ArticleScreen()));
+      }
+    });
+
+    // Handle cold start deep linking
+    FirebaseMessaging.instance.getInitialMessage().then((RemoteMessage? message) {
+      if (message != null && message.data['screen'] == 'articles') {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => ArticleScreen()),
+        );
+      }
+    });
+
     // Foreground message handler
-FirebaseMessaging.onMessage.listen((RemoteMessage event) {
-  String notificationType = event.data['notificationType'] ?? 'regular';
-  String title = event.notification?.title ?? "Notification";
-  String body = event.notification?.body ?? "";
+    FirebaseMessaging.onMessage.listen((RemoteMessage event) {
+      String notificationType = event.data['notificationType'] ?? 'regular';
+        String title = event.notification?.title ?? "Notification";
+      String body = event.notification?.body ?? "";
 
-  bool isImportant = notificationType == 'important';
+        bool isImportant = notificationType == 'important';
 
-    // Save to history
-  setState(() {
-    notificationHistory.add("${notificationType.toUpperCase()}: $body");
-  });
+      // Save to history
+      setState(() {
+        notificationHistory.add("${notificationType.toUpperCase()}: $body");
+      });
 
-
-  showDialog(
+      // Show the notification in a dialog
+      showDialog(
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
@@ -101,19 +117,11 @@ FirebaseMessaging.onMessage.listen((RemoteMessage event) {
           )
         ],
       );
-    },
-  );
-});
-
-
-    // Handle notification tap when app is opened from background
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print('Notification clicked!');
-      if (message.data['screen'] == 'details') {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => DetailScreen()));
-      }
     });
+    },
+    );
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -145,8 +153,15 @@ FirebaseMessaging.onMessage.listen((RemoteMessage event) {
                     elevation: 2,
                     margin: EdgeInsets.symmetric(vertical: 4),
                     child: ListTile(
-            
                       title: Text(notificationHistory[index]),
+                      onTap: () {
+            // Check if the tapped notification should lead to a specific screen
+            if (notificationHistory[index].contains('IMPORTANT')) {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => ArticleScreen()));
+            } else{
+              Navigator.push(context, MaterialPageRoute(builder: (_) => ArticleScreen()));
+            }
+          },
                     ),
                   );
                 },
@@ -155,18 +170,6 @@ FirebaseMessaging.onMessage.listen((RemoteMessage event) {
           ],
         ),
       ),
-    );
-  }
-}
-
-class DetailScreen extends StatelessWidget {
-  const DetailScreen({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("Notification Detail")),
-      body: Center(child: Text("You tapped on a deep link notification!")),
     );
   }
 }
