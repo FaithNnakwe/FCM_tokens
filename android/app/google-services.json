@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1072609142632",
+    "project_id": "faith-mad-chat-app",
+    "storage_bucket": "faith-mad-chat-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1072609142632:android:21988355f89297b35dd8dd",
+        "android_client_info": {
+          "package_name": "com.example.chat_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBDmwMAV5OQ9BAFkbL3_9ALDWf_O4LaB2I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
